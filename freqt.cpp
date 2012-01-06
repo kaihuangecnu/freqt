@@ -47,6 +47,7 @@ private:
   bool enc;
   bool where;
   std::ostream *os;
+  READER_FUNC reader_func;
 
   std::istream& read (std::istream &is)
   {
@@ -54,7 +55,7 @@ private:
     while (std::getline (is, line)) {
       if (line.empty() || line[0] == ';') continue;
       transaction.resize (transaction.size()+1);
-      str2node (line, transaction[transaction.size()-1]);
+      this->reader_func (line, transaction[transaction.size()-1]);
     }
     return is;
   }
@@ -195,7 +196,8 @@ public:
 	    unsigned int _maxpat,
 	    bool _weighted,
 	    bool _enc,
-	    bool _where)
+	    bool _where,
+        READER_FUNC _reader_func)
   { 
     minsup   = _minsup;
     minpat   = _minpat;
@@ -204,7 +206,7 @@ public:
     weighted = _weighted;
     where    = _where;
     os       = &_os;
-
+    reader_func = _reader_func;
     read (_is);
 
     std::map <std::string, projected_t> freq1;
@@ -243,9 +245,10 @@ int main (int argc, char **argv)
   bool enc = false;
   bool where = false;
   bool weighted = false;
+  unsigned int format = 0;
 
   int opt;
-  while ((opt = getopt(argc, argv, "weWM:m:L:")) != -1) {
+  while ((opt = getopt(argc, argv, "weWM:m:L:f:")) != -1) {
     switch(opt) {
     case 'm':
       minsup = atoi (optarg);
@@ -255,6 +258,9 @@ int main (int argc, char **argv)
       break;
     case 'L':
       maxpat = atoi (optarg);
+      break;
+    case 'f':
+      format = atoi (optarg);
       break;
     case 'e':
       enc = true;
@@ -266,18 +272,29 @@ int main (int argc, char **argv)
       weighted = true;
       break;
     default:
-      std::cout << "Usage: " << argv[0] 
+     std::cerr << "Usage: " << argv[0] 
            << " [-m minsup] [-M minpat] [-L maxpat] [-e] [-W] < data .." << std::endl;
-     std::cout << "Version: " << CONST_VERSION        
+     std::cerr << "Version: " << CONST_VERSION        
            << " (Build at " << CONST_COMF_DATETIME << ")" << std::endl;
 
       return -1;
     }
   }
 
+  READER_FUNC reader_func = str2node;
+  switch(format){
+      case 0:
+          break;
+      case 1:
+          break;
+      default:
+        std::cerr << "Unknown format type" << std::endl;
+        return -1;
+  };
+
   Freqt freqt;
   freqt.run (std::cin, std::cout, 
-	     minsup, minpat, maxpat, weighted, enc, where);
+	     minsup, minpat, maxpat, weighted, enc, where, reader_func);
 
   return 0;
 }

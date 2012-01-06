@@ -25,6 +25,7 @@ void tokenize (const std::string &str, Iterator iterator)
     std::copy (std::istream_iterator <T> (is), std::istream_iterator <T> (), iterator);
 }
 
+typedef void (*READER_FUNC)(const std::string& , nodes_t&);
 
 void str2node (const std::string& str, nodes_t& node)
 {
