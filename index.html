@@ -1,0 +1,217 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta name="generator" content="HTML Tidy, see www.w3.org" />
+<link rev="made" href="mailto:taku-ku@is.aist-nara.ac.jp" />
+<title>FREQT: An implementation of FREQT</title>
+<link type="text/css" rel="stylesheet" href="freqt.css" />
+</head>
+<body>
+<h1>FREQT: An implementation of FREQT (FREQuent Tree miner)</h1>
+
+<p>$Id: index.html,v 1.1 2003/09/07 10:10:02 taku-ku Exp $;</p>
+
+<h2>Introduction</h2>
+
+<p>The algorithm <b>FREQT</b> (FREQuent Tree miner), independently
+introduced by Asai<a href="#1">[1]</a> and Zaki<a
+href="#2">[2]</a>, efficiently extracts <i>frequent</i>
+ordered-sub-trees from a set of ordered-trees (forest database).
+<i>Frequent</i> means that a sub-tree occurs in no less than N
+trees, where N is a user given threshold usually called <i>minimum
+support</i>. <b>FREQT</b> efficiently enumerates frequent sub-trees
+using <i>right-most expansion</i>.</p>
+
+<h2>Author</h2>
+
+<ul>
+<li><a href="http://cl.aist-nara.ac.jp/~taku-ku/">Taku
+Kudo</a><br />
+<a href="http://cl.aist-nara.ac.jp">Nara Institute of Science and
+Technology, Graduate School of Information Science, Computational
+Linguistics Laboratory</a></li>
+</ul>
+
+<br />
+<br />
+ 
+
+<h2><a id="download" name="download">Download</a></h2>
+
+<ul>
+<li><b>FREQT</b> is free software; you can redistribute it and/or
+modify it under the terms of the <a
+href="http://www.gnu.org/copyleft/gpl.html">GNU General Public
+License</a>.</li>
+
+<li><b>FREQT</b> is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See <a
+href="http://www.gnu.org/copyleft/gpl.html">GNU General Public
+License</a>.the for more details. 
+
+<h3><a id="source" name="source">Source</a></h3>
+
+<ul>
+<li>freqt-0.22.tar.gz: <a href="freqt-0.22.tar.gz">HTTP</a></li>
+</ul>
+</li>
+</ul>
+
+<h2>Installation</h2>
+
+<ul>
+<li>Requirements 
+
+<ul>
+<li>C++ compiler (gcc 2.95 or higher, does not support gcc 2.8 or
+2.7)</li>
+
+<li>POSIX getopt library (most of UNIX-based OS have it)</li>
+</ul>
+</li>
+
+<li>How to make 
+
+<pre>
+% make
+% make test 
+</pre>
+</li>
+</ul>
+
+<h2>Usage</h2>
+
+<pre>
+./freqt [options] &lt; input-data &gt; output-data
+
+option: 
+-m NUM:   set minimum support   (default: 1)
+-M NUM:   set minimum node size (default: 1)
+-L NUM:   set maximum node size (default: 0xffffffff)
+
+-W:       use "weighted" support instead of "standard" support
+          Even if a sub-tree pattern occurs more than one time
+      in a transaction, the "support" for this transaction is 1. 
+      On the other hand, "weighted support" counts all 
+      occurrences in a transaction.
+
+-e:       use internal string encoding format<a
+href="#2">[2]</a> as output 
+
+-w:   output the location where each pattern occurs.
+</pre>
+
+<h2>Format of input data</h2>
+
+<p>The input file need to be in a particular format for the
+<b>FREQT</b> to work properly. Each line of the input file denotes
+one tree transaction represented in <i>strict</i> S-expression.
+<i>Strict</i> means that all nodes, even leaf nodes, must be
+bracketed. For example, (c(a b)) should be written as (c(a)(b)). If
+the line begin with ';' (comment character in S-expression), this
+line is ignored.</p>
+
+<p>Here is an example of such data.</p>
+
+<pre>
+;; this is an example
+(S(NP(I))(VP(saw)(NP(a)(girl))(PP(with)(NP(a)(telescope))))(.))
+(S(NP(He))(VP(saw)(NP(the)(boy))(PP(with)(NP(this)(camera))))(.))
+(S(NP(I))(VP(go)(PP(to)(NP(this)(hotel))))(.))
+(S(NP(She))(VP(finds)(NP(a)(mistake))(PP(in)(this)(paper)))(.))
+</pre>
+
+<p>See 'data' as sample file.</p>
+
+<p>If you want to handle frequent oriented-tree, just sort siblings
+by dictionary order.</p>
+
+<pre>
+Orderd-tree: (a(b)(d(e)(c)) 
+Oriented-tree: (a(b)(c)(d(e))
+</pre>
+
+<h2>Format of output data</h2>
+
+<p>Each line denotes a frequent sub-tree pattern, consisting of
+four columns, support, weighted support, size of tree (# of nodes),
+and frequent sub-tree pattern represented in strict S-expression.
+You can restrict the size of tree by using -L MIN_SIZE and -M
+MAX_SIZE option. The -e option changes the sub-tree format from
+S-expression to the internal string-encoding format<a
+href="#2">[2]</a>.</p>
+
+<p>Here is a concrete example of output.</p>
+
+<pre>
+12 12 2 (~IN(at))
+11 11 2 (~IN(by))
+23 25 2 (~IN(for))
+11 11 3 (~IN(for)(~NN))
+11 13 2 (~IN(from))
+23 24 2 (~IN(in))
+</pre>
+
+<p>The sub-tree pattern, "(~IN(at))", consists of 2 nodes and has
+12 supports and 12 weighted supports.</p>
+
+<p>The -w option allows you to obtain the list of transaction ids
+where a pattern occurs. Here is an example.</p>
+
+<pre>
+&lt;pattern&gt;
+&lt;support&gt;12&lt;support&gt;
+&lt;wsupport&gt;16&lt;wsupport&gt;
+&lt;where&gt;43 43 53 53 55 58 61 61 63 89 91 91 93 94 95 96&lt;where&gt;
+&lt;what&gt;($)&lt;what&gt;
+&lt;pattern&gt;
+&lt;pattern&gt;
+&lt;support&gt;10&lt;support&gt;
+&lt;wsupport&gt;18&lt;wsupport&gt;
+&lt;where&gt;34 34 41 41 45 46 46 48 48 49 49 49 49 50 91 91 95 96&lt;where&gt;
+&lt;what&gt;(%)&lt;what&gt;
+&lt;pattern&gt;
+&lt;pattern&gt;
+</pre>
+
+<p>One sub-tree pattern is bracketed in a &lt;pattern&gt; tag. The
+transaction ids where the pattern occurs are listed in
+&lt;where&gt; tag. The extracted sub-tree pattern, support and
+weighted support are in &lt;what&gt;, &lt;support&gt;, and
+&lt;wsupport&gt; tags respectively.</p>
+
+<h2>Bibliography</h2>
+
+<ul>
+<li><a id="1" name="1">[1]</a> Kenji Abe, Shinji Kawasoe, Tatsuya
+Asai, Hiroki Arimura, Setsuo Arikawa, Optimized Substructure
+Discovery for Semi-structured Data, Proc. 6th European Conference
+on Principles and Practice of Knowledge Discovery in Databases
+(PKDD-2002), LNAI 2431, Springer-Verlag, 1-14, August 2002.</li>
+
+<li><a id="2" name="2">[2]</a> Mohammed J. Zaki, Efficiently Mining
+Frequent Trees in a Forest, 8th ACM SIGKDD International Conference
+on Knowledge Discovery and Data Mining, July 2002.</li>
+</ul>
+
+<h2>Links</h2>
+
+<ul>
+<li><a
+href="http://www.i.kyushu-u.ac.jp/~t-asai/research/imdb/DemoXML_HTML_Mining.htm">
+Demo of REQT</a></li>
+
+<li><a
+href="http://chasen.aist-nara.ac.jp/~yuuta-t/dist/prog/tmine/doc">Ruby
+implimentation of FREQT</a></li>
+</ul>
+
+<hr />
+<p>$Id: index.html,v 1.1 2003/01/22 10:10:02 taku-ku Exp $;</p>
+
+<address>taku-ku@is.aist-nara.ac.jp</address>
+</body>
+</html>
+
