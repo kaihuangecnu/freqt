@@ -20,6 +20,7 @@
   
 #include <iostream>
 #include <iostream>
+#include <fstream>
 #include <sstream>
 #include <vector>
 #include <string>
@@ -49,15 +50,15 @@ private:
   std::ostream *os;
   READER_FUNC reader_func;
 
-  std::istream& read (std::istream &is)
+  std::istream& read (std::istream *is)
   {
     std::string line;
-    while (std::getline (is, line)) {
+    while (std::getline (*is, line)) {
       if (line.empty() || line[0] == ';') continue;
       transaction.resize (transaction.size()+1);
       this->reader_func (line, transaction[transaction.size()-1]);
     }
-    return is;
+    return *is;
   }
 
   unsigned int support (const projected_t &projected)
@@ -190,7 +191,7 @@ private:
 
 public:
 
-  void run (std::istream &_is, std::ostream &_os,
+  void run (std::istream *_is, std::ostream &_os,
 	    unsigned int _minsup,
 	    unsigned int _minpat,
 	    unsigned int _maxpat,
@@ -246,9 +247,10 @@ int main (int argc, char **argv)
   bool where = false;
   bool weighted = false;
   unsigned int format = 0;
+  std::string filename = "-";
 
   int opt;
-  while ((opt = getopt(argc, argv, "weWM:m:L:f:")) != -1) {
+  while ((opt = getopt(argc, argv, "weWM:m:L:f:i:")) != -1) {
     switch(opt) {
     case 'm':
       minsup = atoi (optarg);
@@ -262,6 +264,9 @@ int main (int argc, char **argv)
     case 'f':
       format = atoi (optarg);
       break;
+    case 'i':
+      filename = std::string(optarg);
+      break;
     case 'e':
       enc = true;
       break;
@@ -273,7 +278,7 @@ int main (int argc, char **argv)
       break;
     default:
      std::cerr << "Usage: " << argv[0] 
-           << " [-m minsup] [-M minpat] [-L maxpat] [-e] [-W] < data .." << std::endl;
+           << " [-m minsup] [-M minpat] [-L maxpat] [-e] [-W] [-f format] [-i filename|-i - < data|<data]" << std::endl;
      std::cerr << "Version: " << CONST_VERSION        
            << " (Build at " << CONST_COMF_DATETIME << ")" << std::endl;
 
@@ -286,15 +291,24 @@ int main (int argc, char **argv)
       case 0:
           break;
       case 1:
+        //FIXME
           break;
       default:
         std::cerr << "Unknown format type" << std::endl;
         return -1;
   };
 
+  std::istream *is = &std::cin;
+  if (filename != "-"){
+      const char* fn = filename.c_str();
+      is = new std::ifstream(fn);
+  };
   Freqt freqt;
-  freqt.run (std::cin, std::cout, 
+  freqt.run (is, std::cout, 
 	     minsup, minpat, maxpat, weighted, enc, where, reader_func);
 
+  if (filename != "-"){
+      delete is;
+  };
   return 0;
 }
