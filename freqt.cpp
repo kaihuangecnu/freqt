@@ -1,6 +1,4 @@
 /*
-   $Id: freqt.cpp,v 1.5 2003/01/22 08:37:19 taku-ku Exp $;
-
    Copyright (C) 2003 Taku Kudo, All rights reserved.
    This is free software with ABSOLUTELY NO WARRANTY.
 
@@ -22,21 +20,21 @@
   
 #include <iostream>
 #include <iostream>
+#include <sstream>
 #include <vector>
 #include <string>
-#include <strstream>
 #include <map>
 #include <iterator>
 #include <cstdlib>
 #include <cstring>
 #include <unistd.h>
 
-using namespace std;
+#include "config.hpp"
 
 template <class T, class Iterator> 
-void tokenize (const char *str, Iterator iterator) 
+void tokenize (const std::string &str, Iterator iterator) 
 {
-  std::istrstream is (str, std::strlen(str));
+  std::istringstream is(str);
   std::copy (std::istream_iterator <T> (is), std::istream_iterator <T> (), iterator);
 }
 
@@ -214,7 +212,7 @@ private:
          l != candidate.end(); ) {
       unsigned int sup= support (l->second);
       if (sup < minsup) {
-        map <std::string, projected_t>::iterator tmp = l;
+        std::map <std::string, projected_t>::iterator tmp = l;
         tmp = l;
         ++tmp;
         candidate.erase (l);
@@ -261,7 +259,7 @@ private:
     for (std::map <std::string, projected_t>::iterator l = candidate.begin (); 
          l != candidate.end(); ++l) {
       unsigned int size = pattern.size();
-      tokenize<std::string>(l->first.c_str(), std::back_inserter(pattern));
+      tokenize<std::string>(l->first, std::back_inserter(pattern));
       report (l->second);
       project (l->second);
       pattern.resize (size);
@@ -351,6 +349,9 @@ int main (int argc, char **argv)
     default:
       std::cout << "Usage: " << argv[0] 
            << " [-m minsup] [-M minpat] [-L maxpat] [-e] [-W] < data .." << std::endl;
+     std::cout << "Version: " << CONST_VERSION        
+           << " (Build at " << CONST_COMF_DATETIME << ")" << std::endl;
+
       return -1;
     }
   }

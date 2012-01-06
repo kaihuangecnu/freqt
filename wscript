@@ -5,7 +5,7 @@
 
 
 APPNAME = 'freqt'
-VERSION = '0.22'
+VERSION = '0.221'
 
 #srcdir = 'src'
 out = 'bin'
