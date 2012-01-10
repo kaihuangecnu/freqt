@@ -33,6 +33,8 @@
 #include "config.hpp"
 #include "freqt.hpp"
 
+#include "lib/base/singleton.cc"
+#include "lib/base/mutex.cc"
 
 
 class Freqt {
@@ -164,7 +166,7 @@ private:
 	int start    = (d == -1) ? transaction[id][pos].child : transaction[id][pos].sibling;
 	int newdepth = depth - d;
 	for (int l = start; l != -1; l = transaction[id][l].sibling) {
-	  std::string item = prefix + " " + transaction[id][l].val;
+	  std::string item = prefix + " " + *(transaction[id][l].val);
 	  projected_t &tmp = candidate[item];
 	  tmp.locations.push_back (std::make_pair <unsigned int, int> (id, l));
 	  tmp.depth = newdepth;
@@ -213,7 +215,7 @@ public:
     std::map <std::string, projected_t> freq1;
     for (unsigned int i = 0; i < transaction.size(); ++i) 
       for (unsigned int j = 0; j < transaction[i].size(); ++j) 
-	freq1[transaction[i][j].val].locations.push_back (std::make_pair <unsigned int, int> (i, j));
+	freq1[*(transaction[i][j].val)].locations.push_back (std::make_pair <unsigned int, int> (i, j));
 
     prune (freq1);
      

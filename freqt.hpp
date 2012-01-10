@@ -1,9 +1,48 @@
 #ifndef HEADER_35b6f286dbbc43bd8cf4efc47aa6952f
 #define HEADER_35b6f286dbbc43bd8cf4efc47aa6952f
 
+//#include "lib/singleton.h"
+
+//class SingleString : public mozc::Singleton<SingleString>{
+//class SingleString{
+//    private:
+
+//    public:
+//    SingleString(){};
+//    ~SingleString{
+//    };
+//};
+
+#include <tr1/unordered_map>
+#include "lib/base/singleton.h"
+
+typedef std::tr1::unordered_map <std::string, const std::string*> str2strptr;
+
+class SingleString : public mozc::Singleton<SingleString> {
+    private:
+        str2strptr strmap;
+
+    public:
+        const std::string* getPointer(const std::string &query){
+            str2strptr::iterator it = strmap.find(query);
+            if (it != strmap.end()){
+                const std::string* ptr = it->second;
+                return ptr;
+            }
+            const std::string* ptr = new std::string(query);
+            strmap[query] = ptr;
+            return ptr;
+        };
+
+        ~SingleString(){
+            for(str2strptr::iterator it=strmap.begin(); it!=strmap.end(); ++it){
+                delete it->second;
+            };
+        };
+};
 
 struct node_t {
-    std::string val;
+    const std::string *val;
     int sibling;
     int child;
     int parent;
@@ -76,7 +115,7 @@ void str2node (const std::string& str, nodes_t& node)
                 sibling[parent] = child;
                 sr.resize (top);
             } else {
-                node[id].val = tmp[i];
+                node[id].val = SingleString::get()->getPointer(tmp[i]);
                 sr.push_back (id);
                 id++;
             }

@@ -75,7 +75,7 @@ def build(bld):
 #    bld.recurse('lib')
 
     CONFDIR = 'bin'
-    INCS  = [CONFDIR]
+    INCS  = [CONFDIR, "lib"]
     if bld.env['PROF_MODE']:
         CXXFLAGS = ['-g', '-pg', '-Wall'] #,'-Wshadow']
     elif bld.env['DEBUG_MODE']:
