@@ -37,7 +37,7 @@ class SingleString : public mozc::Singleton<SingleString> {
         ~SingleString(){
             for(str2strptr::iterator it=strmap.begin(); it!=strmap.end(); ++it){
                 delete it->second;
-            };
+             };
         };
 };
 
@@ -65,6 +65,30 @@ void tokenize (const std::string &str, Iterator iterator)
 }
 
 typedef void (*READER_FUNC)(const std::string& , nodes_t&);
+
+void str2node2 (const std::string& str, nodes_t& node)
+{
+    std::vector < std::string > tokens;
+    tokenize<std::string>(str, std::back_inserter(tokens));
+    unsigned int len = tokens.size() / 2;
+    node.resize (len);
+    std::vector <int> sibling (len);
+    for (unsigned int i=0; i<len; ++i){
+        node[i].val = SingleString::get()->getPointer(tokens[2*i]);
+        node[i].sibling = -1;
+        node[i].child = -1;
+        const int parent = atoi(tokens[2*i + 1].c_str()) -1;
+        node[i].parent = parent;
+        sibling[i] = -1;
+        const unsigned int here = i;
+        if (parent!=-1){
+            if (node[parent].child == -1) node[parent].child = here;
+            if (sibling[parent] != -1) node[sibling[parent]].sibling = here;
+            sibling[parent] = here;
+        };
+    };
+}
+
 
 void str2node (const std::string& str, nodes_t& node)
 {

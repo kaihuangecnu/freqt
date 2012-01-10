@@ -232,7 +232,7 @@ public:
     if (where) *os << "</results>\n";
 
     return;
-  }
+  };
 
   Freqt (): minsup (1), minpat (1), maxpat (0xffffffff), 
             weighted (false), enc (false), where (false), os(&std::cout) {};
@@ -293,7 +293,7 @@ int main (int argc, char **argv)
       case 0:
           break;
       case 1:
-        //FIXME
+          reader_func = str2node2;
           break;
       default:
         std::cerr << "Unknown format type" << std::endl;
@@ -314,3 +314,4 @@ int main (int argc, char **argv)
   };
   return 0;
 }
+
