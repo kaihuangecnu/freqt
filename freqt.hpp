@@ -68,6 +68,7 @@ typedef void (*READER_FUNC)(const std::string& , nodes_t&);
 
 void str2node2 (const std::string& str, nodes_t& node)
 {
+    //assert the node-id of a new node's parent is less than it
     std::vector < std::string > tokens;
     tokenize<std::string>(str, std::back_inserter(tokens));
     unsigned int len = tokens.size() / 2;
